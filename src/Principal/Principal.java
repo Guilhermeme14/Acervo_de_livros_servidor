@@ -2,39 +2,38 @@ package Principal;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Principal {
 
     public static void main(String[] args) {
+
+        // Cria o Array em que os livros serão colocados
+        List<Livro> livroAcervo = new ArrayList<>();
+
         try {
+            // Inicia o server na porta 4444 e aguarda pelo cliente
             ServerSocket servidor = new ServerSocket(4444);
             System.out.println("Servidor iniciado.");
             System.out.println("Aguardando cliente.");
 
             while (true) {
+                // Aceita e faz conecção com o cliente
                 Socket socket = servidor.accept();
                 System.out.println("Cliente " + socket.getInetAddress().getHostAddress() + " conectado.");
-                ObjectInputStream obj = new ObjectInputStream(socket.getInputStream());
 
-                Livro livro = (Livro) obj.readObject();
-
-                System.out.println("Livro");
-                System.out.println("Título: " + livro.getTitulo());
-                System.out.println("Autor: " + livro.getAutor());
-                System.out.println("Editora: " + livro.getEditora());
-                System.out.println("Ano de publicação: " + livro.getAno());
-                System.out.println("Coleção: " + livro.getColecao());
-                System.out.println("Assunto: " + livro.getAssunto());
-                System.out.println("Sinopse: " + livro.getSinopse());
-                System.out.println("Idioma: " + livro.getIdioma());
-                System.out.println("Disponível: " + livro.isDisponivel());
+                // Começa thread para lidar com cliente(s)
+                ServerThread serverThread = new ServerThread(socket, livroAcervo);
+                serverThread.start();
 
             }
 
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Exceção: " + e.getMessage());
         }
     }
 }
