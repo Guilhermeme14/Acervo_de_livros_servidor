@@ -2,7 +2,7 @@ package Principal;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 public class Livro implements Serializable {
 
@@ -101,47 +101,86 @@ public class Livro implements Serializable {
     }
 
     public void adicionar() {
-        setId(Integer.parseInt(JOptionPane.showInputDialog(null, "Digite o ID do livro: ")));
-        setTitulo(JOptionPane.showInputDialog(null, "Digite o título: "));
-        setAutor(JOptionPane.showInputDialog(null, "Digite o autor: "));
-        setEditora(JOptionPane.showInputDialog(null, "Digite a editora: "));
-        setAno(Integer.parseInt(JOptionPane.showInputDialog(null, "Digite o ano de publicação: ")));
-        setColecao(JOptionPane.showInputDialog(null, "Digite a coleção: "));
-        setAssunto(JOptionPane.showInputDialog(null, "Digite o assunto: "));
-        setSinopse(JOptionPane.showInputDialog(null, "Digite a sinopse: "));
-        setIdioma(JOptionPane.showInputDialog(null, "Digite o idioma: "));
-    }
+        // Cria uma janela 'panel' e o layout
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-    public void atualizar(int id) {
-        setTitulo(JOptionPane.showInputDialog(null, "Digite o título do livro: "));
-        setAutor(JOptionPane.showInputDialog(null, "Digite o autor: "));
-        setEditora(JOptionPane.showInputDialog(null, "Digite a editora: "));
-        setAno(Integer.parseInt(JOptionPane.showInputDialog(null, "Digite o ano de publicação: ")));
-        setColecao(JOptionPane.showInputDialog(null, "Digite a coleção: "));
-        setAssunto(JOptionPane.showInputDialog(null, "Digite o assunto: "));
-        setSinopse(JOptionPane.showInputDialog(null, "Digite a sinopse: "));
-        setIdioma(JOptionPane.showInputDialog(null, "Digite o idioma: "));
-    }
+        // Define os campos, seus rótulos, e os adiciona no 'panel'
+        JTextField idCampo = new JTextField(10);
+        panel.add(new JLabel("Digite o ID do livro: "));
+        panel.add(idCampo);
 
-    public static boolean foiAtualizado(List<Livro> livroAcervo, Livro livroAtualizado) {
-        for (int i = 0; i < livroAcervo.size(); i++) {
-            Livro livro = livroAcervo.get(i);
-            // Se o ID bater, substitui as informações do livro com as do livro atualizado
-            if (livro.getId() == livroAtualizado.getId()) {
-                livroAcervo.set(i, livroAtualizado);
-                return true;
-            }
+        JTextField tituloCampo = new JTextField(10);
+        panel.add(new JLabel("Digite o título: "));
+        panel.add(tituloCampo);
+
+        JTextField autorCampo = new JTextField(10);
+        panel.add(new JLabel("Digite o autor: "));
+        panel.add(autorCampo);
+
+        JTextField editoraCampo = new JTextField(10);
+        panel.add(new JLabel("Digite a editora: "));
+        panel.add(editoraCampo);
+
+        JTextField anoCampo = new JTextField(10);
+        panel.add(new JLabel("Digite o ano de publicação: "));
+        panel.add(anoCampo);
+
+        JTextField colecaoCampo = new JTextField(10);
+        panel.add(new JLabel("Digite a coleção: "));
+        panel.add(colecaoCampo);
+
+        JTextField assuntoCampo = new JTextField(10);
+        panel.add(new JLabel("Digite o assunto: "));
+        panel.add(assuntoCampo);
+
+        JTextArea sinopseCampo = new JTextArea(5, 5); // Define uma área maior de texto para a sinopse
+        sinopseCampo.setLineWrap(true); // Quebra de linhas automática
+        (sinopseCampo).setBorder(new JTextField().getBorder()); // Borda igual ao JTextField
+        panel.add(new JLabel("Digite a sinopse: ")); // Rótulo
+        panel.add(new JScrollPane(sinopseCampo)); // JScrollPane para os rótulos não se moverem ao digitar
+
+        String[] idiomaOpcoes = {"Portugues", "Ingles", "Espanhol"}; // Idiomas que podem ser escolhidos
+        JComboBox<String> menuEscolherIdioma = new JComboBox<>(idiomaOpcoes); // Menu dropdown com as escolhas
+        panel.add(new JLabel("Escolha um idioma: ")); // Rótulo
+        panel.add(menuEscolherIdioma); // Adiciona menu ao 'panel'
+
+        UIManager.put("OptionPane.yesButtonText", "Sim");
+        UIManager.put("OptionPane.noButtonText", "Não");
+        int opcaoDisponibilidade = JOptionPane.showConfirmDialog(null, "O livro está disponível?", "Disponibilidade", JOptionPane.YES_NO_OPTION);
+        boolean disponibilidade = (opcaoDisponibilidade == JOptionPane.YES_OPTION);
+        panel.add(new JLabel("Disponível?"));
+        panel.add(new JLabel(disponibilidade ? "Sim" : "Não"));
+
+        int opcao = JOptionPane.showOptionDialog(
+                null,
+                panel,
+                "Adicionar Livro",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                null,
+                null
+        );
+
+        // Adiciona o livro se o botão OK for selecionado
+        if (opcao == JOptionPane.OK_OPTION) {
+            setId(Integer.parseInt(idCampo.getText()));
+            setTitulo(tituloCampo.getText());
+            setAutor(autorCampo.getText());
+            setEditora(editoraCampo.getText());
+            setColecao(colecaoCampo.getText());
+            setAssunto(assuntoCampo.getText());
+            setSinopse(sinopseCampo.getText());
+            setIdioma((String) menuEscolherIdioma.getEditor().getItem());
+            setAno(Integer.parseInt(anoCampo.getText()));
         }
-        return false;
-    }
 
-    public static Livro consultarId(List<Livro> livroAcervo, int id) {
-        for (Livro livro : livroAcervo) {
-            if (livro.getId() == id) {
-                return livro;
-            }
+        // Não adiciona o livro se o botão CANCEL for selecionado
+        if (opcao == JOptionPane.CANCEL_OPTION) {
+            JOptionPane.showInputDialog("Ação cancelada.");
         }
-        return null;
+
     }
 
     public String consultarInfo(int id) {
@@ -154,5 +193,24 @@ public class Livro implements Serializable {
                 + "\nSinopse: " + getSinopse()
                 + "\nIdioma: " + getIdioma()
                 + "\nDisponível: " + isDisponivel();
+    }
+
+    public static Livro consultarId(List<Livro> livroAcervo, int id) {
+        for (Livro livro : livroAcervo) {
+            if (livro.getId() == id) {
+                return livro;
+            }
+        }
+        return null;
+    }
+
+    public static boolean remover(List<Livro> livroAcervo, int id) {
+        for (Livro livro : livroAcervo) {
+            if (livro.getId() == id) {
+                livroAcervo.remove(livro);
+                return true;
+            }
+        }
+        return false;
     }
 }
