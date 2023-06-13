@@ -1,6 +1,7 @@
 package Principal;
 
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.*;
 
@@ -92,12 +93,12 @@ public class Livro implements Serializable {
         this.idioma = idioma;
     }
 
-    public boolean isDisponivel() {
-        return disponivel;
-    }
-
     public void setDisponivel(boolean disponivel) {
         this.disponivel = disponivel;
+    }
+
+    public boolean isDisponivel() {
+        return disponivel;
     }
 
     public void adicionar() {
@@ -145,41 +146,70 @@ public class Livro implements Serializable {
         panel.add(new JLabel("Escolha um idioma: ")); // Rótulo
         panel.add(menuEscolherIdioma); // Adiciona menu ao 'panel'
 
-        UIManager.put("OptionPane.yesButtonText", "Sim");
-        UIManager.put("OptionPane.noButtonText", "Não");
-        int opcaoDisponibilidade = JOptionPane.showConfirmDialog(null, "O livro está disponível?", "Disponibilidade", JOptionPane.YES_NO_OPTION);
-        boolean disponibilidade = (opcaoDisponibilidade == JOptionPane.YES_OPTION);
-        panel.add(new JLabel("Disponível?"));
-        panel.add(new JLabel(disponibilidade ? "Sim" : "Não"));
+        // Validação
+        while (true) {
+            // Exibe o painel na janela de diálogo
+            int opcao = JOptionPane.showOptionDialog(
+                    null,
+                    panel,
+                    "Adicionar Livro",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    null,
+                    null
+            );
 
-        int opcao = JOptionPane.showOptionDialog(
-                null,
-                panel,
-                "Adicionar Livro",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                null,
-                null
-        );
+            // Se o usuário clicou em OK, verifica se:
+            if (opcao == JOptionPane.OK_OPTION) {
+                if (idCampo.getText().isEmpty() || tituloCampo.getText().isEmpty() || autorCampo.getText().isEmpty()
+                        || editoraCampo.getText().isEmpty() || anoCampo.getText().isEmpty() || colecaoCampo.getText().isEmpty()
+                        || assuntoCampo.getText().isEmpty() || sinopseCampo.getText().isEmpty()) {
+                    // Algum campo está vazio
+                    JOptionPane.showMessageDialog(null, "Preencha todos os campos!", "Aviso", JOptionPane.WARNING_MESSAGE);
+                } else if ((tituloCampo.getText()).length() < 5 || (autorCampo.getText()).length() < 5
+                        || (editoraCampo.getText()).length() < 5 || (colecaoCampo.getText()).length() < 5
+                        || (assuntoCampo.getText()).length() < 5 || (sinopseCampo.getText()).length() < 5) {
+                    // Título, autor, editora, coleção, assunto e sinopse curtos.
+                    JOptionPane.showMessageDialog(null, "Muito curto! Campos como titulo e autor devem ter, no minimo, 5 caracteres.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                } else if (Integer.parseInt(anoCampo.getText()) < 1500 || Integer.parseInt(anoCampo.getText()) > 2023) {
+                    // Ano de publicação é inválido
+                    JOptionPane.showMessageDialog(null, "Ano de publicação inválido! Informe um ano entre 1500 e 2023.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                } else {
+                    break;
+                }
+
+            } else {
+                // O usuário clicou em "Cancelar" ou fechou a janela
+                return;
+            }
+
+        }
+
+        boolean disponibilidade = false;
+
+        while (true) {
+            UIManager.put("OptionPane.yesButtonText", "Sim");
+            UIManager.put("OptionPane.noButtonText", "Não");
+
+            int opcaoDisponibilidade = JOptionPane.showConfirmDialog(null, "O livro está disponível?", "Disponibilidade", JOptionPane.YES_NO_OPTION);
+            if (opcaoDisponibilidade == JOptionPane.YES_OPTION || opcaoDisponibilidade == JOptionPane.NO_OPTION) {
+                disponibilidade = (opcaoDisponibilidade == JOptionPane.YES_OPTION);
+                break;
+            }
+        }
 
         // Adiciona o livro se o botão OK for selecionado
-        if (opcao == JOptionPane.OK_OPTION) {
-            setId(Integer.parseInt(idCampo.getText()));
-            setTitulo(tituloCampo.getText());
-            setAutor(autorCampo.getText());
-            setEditora(editoraCampo.getText());
-            setColecao(colecaoCampo.getText());
-            setAssunto(assuntoCampo.getText());
-            setSinopse(sinopseCampo.getText());
-            setIdioma((String) menuEscolherIdioma.getEditor().getItem());
-            setAno(Integer.parseInt(anoCampo.getText()));
-        }
-
-        // Não adiciona o livro se o botão CANCEL for selecionado
-        if (opcao == JOptionPane.CANCEL_OPTION) {
-            JOptionPane.showInputDialog("Ação cancelada.");
-        }
+        setId(Integer.parseInt(idCampo.getText()));
+        setTitulo(tituloCampo.getText());
+        setAutor(autorCampo.getText());
+        setEditora(editoraCampo.getText());
+        setColecao(colecaoCampo.getText());
+        setAssunto(assuntoCampo.getText());
+        setSinopse(sinopseCampo.getText());
+        setIdioma((String) menuEscolherIdioma.getEditor().getItem());
+        setAno(Integer.parseInt(anoCampo.getText()));
+        setDisponivel(disponibilidade);
 
     }
 
@@ -192,7 +222,7 @@ public class Livro implements Serializable {
                 + "\nAssunto: " + getAssunto()
                 + "\nSinopse: " + getSinopse()
                 + "\nIdioma: " + getIdioma()
-                + "\nDisponível: " + isDisponivel();
+                + "\nDisponível: " + (disponivel ? "Sim" : "Não");
     }
 
     public static Livro consultarId(List<Livro> livroAcervo, int id) {
@@ -205,9 +235,11 @@ public class Livro implements Serializable {
     }
 
     public static boolean remover(List<Livro> livroAcervo, int id) {
-        for (Livro livro : livroAcervo) {
+        Iterator<Livro> iterator = livroAcervo.iterator();
+        while (iterator.hasNext()) {
+            Livro livro = iterator.next();
             if (livro.getId() == id) {
-                livroAcervo.remove(livro);
+                iterator.remove();
                 return true;
             }
         }
